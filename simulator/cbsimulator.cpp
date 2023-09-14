@@ -977,6 +977,9 @@ void cbSimulator::UpdateScores()
           case 6:
             robot->updateScoreLineMappingPlanning2022(); // LINE MAPPING PLANNING
             break;
+          case 7:
+            robot->updateScoreLineControl2023(); // LINE CONTROL 2023 (lines at 45 degrees are allowed)
+            break;
 
           default:
            robot->updateScoreCompetitive();      // COMPETITIVE
@@ -1085,6 +1088,9 @@ void cbSimulator::UpdateState()
              break;
           case 6:
             robot->updateStateLinePlanning2022();         // LINE PLANNING
+             break;
+          case 7:
+            robot->updateStateLineControl2023();         // LINE CONTROL 2023 (lines at 45 degrees allowed)
              break;
           default:
             robot->updateStateCompetitive();    // COMPETITIVE
