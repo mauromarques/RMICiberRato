@@ -1315,9 +1315,9 @@ void cbRobot::updateStateLineControl2022()
                   }
 
                   //debug
-                  for(int i=0; i<nCellPath; i++) {
-                         printf("pathcell %d %d\n",controlCellPath[i].x, controlCellPath[i].y);
-                  }
+                  //for(int i=0; i<nCellPath; i++) {
+                  //       printf("pathcell %d %d\n",controlCellPath[i].x, controlCellPath[i].y);
+                  //}
             }
             break;
         case FINISHED:
@@ -1360,11 +1360,10 @@ void cbRobot::updateStateLineControl2023()
                       int d;
                       struct cell_t cell = newCell;
                       controlCellPath[nCellPath]=cell;
-                      fprintf(stderr,"pathcell %3d %4.1f %4.1f\n",nCellPath, controlCellPath[nCellPath].x*0.5, controlCellPath[nCellPath].y*0.5);
+                      //fprintf(stderr,"pathcell %3d %4.1f %4.1f\n",nCellPath, controlCellPath[nCellPath].x*0.5, controlCellPath[nCellPath].y*0.5);
                       nCellPath++;
                       for(d=-135; d<=135; d+=45) { 
                          if(simulator->Lab()->isInside(cbPoint(newCell.x*0.5+cos((d+dir)*M_PI/180.0)*0.4,newCell.y*0.5+sin((d+dir)*M_PI/180.0)*0.4))){
-                            fprintf(stderr,"newdir %d cellx %d celly %d\n",d+dir, cell.x, cell.y);
                             newCell.x = round(cell.x + cos((dir+d)*M_PI/180.0));
                             newCell.y = round(cell.y + sin((dir+d)*M_PI/180.0));
                             dir = (dir + d + 360) % 360;
@@ -1381,9 +1380,9 @@ void cbRobot::updateStateLineControl2023()
                   }
 
                   //debug
-                  for(int i=0; i<nCellPath; i++) {
-                         fprintf(stderr,"pathcell %4.1f %4.1f\n",controlCellPath[i].x*0.5, controlCellPath[i].y*0.5);
-                  }
+                  //for(int i=0; i<nCellPath; i++) {
+                  //       fprintf(stderr,"pathcell %4.1f %4.1f\n",controlCellPath[i].x*0.5, controlCellPath[i].y*0.5);
+                  //}
             }
             break;
         case FINISHED:
@@ -1787,7 +1786,7 @@ void cbRobot::updateScoreLineControl2023()
                     // check if robot is outside line
                     bool outside=true;
                     for(int c=0 ; c < nCellPath; c++) {
-                        if(abs(controlCellPath[c].x-curCell.x) < 2 && abs(controlCellPath[c].y-curCell.y) < 2){
+                        if(fabs(controlCellPath[c].x - curPos.X()*2.0) < 1.0 && fabs(controlCellPath[c].y-curPos.Y()*2.0) < 1.0){
                             outside = false;
                             break;
                         }
