@@ -1448,6 +1448,24 @@ void cbRobot::updateStateLineMapping2022()
                        } 
                   }
 
+                  // find diagonal lines '/'
+                  for(int cy = 1; cy < cells_height-1; cy++) {
+                       for(int cx = 1; cx < lmap_width-1; cx++) {
+                            if(simulator->Lab()->isInside(cbPoint(cx*2.0+0.5,cy*2.0+0.5))){
+                                lmap[(cy-initCell.y)*2+1+lmap_height/2][(cx-initCell.x)*2+1+lmap_width/2] = '/';
+                            }
+                       } 
+                  }
+
+                  // find diagonal lines '\'
+                  for(int cy = 2; cy < cells_height; cy++) {
+                       for(int cx = 1; cx < lmap_width-1; cx++) {
+                            if(simulator->Lab()->isInside(cbPoint(cx*2.0+0.5,cy*2.0-0.5))){
+                                 lmap[(cy-initCell.y)*2-1+lmap_height/2][(cx-initCell.x)*2+1+lmap_width/2] = '\\';
+                            }
+                       } 
+                  }
+
                   //mark initial pos as I
                   lmap[lmap_height/2][lmap_width/2] = 'I';
 
@@ -1777,7 +1795,7 @@ void cbRobot::updateScoreLineControl2023()
                     // values of 'x' and 'y' fields in currCell, controlCellPath and newCell do NOT REPRESENT the actual coordinates but their doubles
                     curCell.x = curPos.X()*2.0+0.5;
                     curCell.y = curPos.Y()*2.0+0.5;
-                    if(curCell.x == controlCellPath[nextPathInd].x && curCell.y == controlCellPath[nextPathInd].y) {
+                    if(fabs(controlCellPath[nextPathInd].x - curPos.X()*2.0) < 1.0 && fabs(controlCellPath[nextPathInd].y-curPos.Y()*2.0) < 1.0) {
                         nextPathInd++;
                         if (nextPathInd >= nCellPath) nextPathInd=0;
                         scoreControl += 10;
