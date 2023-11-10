@@ -29,6 +29,13 @@ class MyRob(CRobLinkAngs):
         self.distance = (0,0)
         self.localCurves = {}
 
+        #C4
+        self.out_tl_1 = 0
+        self.out_tr_1 = 0
+        self.anglet = 0
+        self.xt_1 = 0
+        self.yt_1 = 0
+
     # In this map the center of cell (i,j), (i in 0..6, j in 0..13) is mapped to labMap[i*2][j*2].
     # to know if there is a wall on top of cell(i,j) (i in 0..5), check if the value of labMap[i*2+1][j*2] is space or not
     def setMap(self, labMap):
@@ -211,17 +218,17 @@ class MyRob(CRobLinkAngs):
                 if len(self.directions) >= 3:
                     self.directions.pop(0)
 
-        # Call driveMotors function with calculated speeds
+        # Call drive_motors function with calculated speeds
         corrected_speeds = self.correct_motor_speeds(left_wheel_speed, right_wheel_speed)
-        self.driveMotors(corrected_speeds[0], corrected_speeds[1])
+        self.drive_motors(corrected_speeds[0], corrected_speeds[1])
         if abs(self.getAngle()) == 135 or abs(self.getAngle()) == 45 :
             if self.distance > 2.3:
                 corrected_speeds = self.correct_motor_speeds(base_speed, base_speed)
-                self.driveMotors(corrected_speeds[0], corrected_speeds[1])
+                self.drive_motors(corrected_speeds[0], corrected_speeds[1])
         else:
             if self.distance > 1.5:
                 corrected_speeds = self.correct_motor_speeds(base_speed, base_speed)
-                self.driveMotors(corrected_speeds[0], corrected_speeds[1])
+                self.drive_motors(corrected_speeds[0], corrected_speeds[1])
 
     def is_at_least_two_away(cself, current_location, previous_location):
         return any(abs(curr - prev) >= 2 for curr, prev in zip(current_location, previous_location))
@@ -390,9 +397,9 @@ class MyRob(CRobLinkAngs):
         while self.getAngle() != angle or self.isCentralLine() != True:
             base_speed = 0.05
             if localCurve < 0:
-                self.driveMotors(base_speed, -base_speed)
+                self.drive_motors(base_speed, -base_speed)
             else:
-                self.driveMotors(-base_speed, base_speed)
+                self.drive_motors(-base_speed, base_speed)
             self.readSensors()
         return
     
@@ -459,6 +466,8 @@ class MyRob(CRobLinkAngs):
         initialGPS = (0.0,0.0)
         intermediateGPS = (0.0,0.0)
         count = 0
+        self.readSensors()
+        self.anglet = self.measures.compass
 
         while True:
             self.readSensors()
@@ -477,7 +486,7 @@ class MyRob(CRobLinkAngs):
                     intermediateGPS = (self.measures.x, self.measures.y)
                     self.lastEvenLocation = self.currentLocation
                     self.shouldTurn = False
-                    self.driveMotors(0,0)
+                    self.drive_motors(0,0)
                     self.updatePaths()  
                     self.grid_coordinates()
                     self.choosePath()
@@ -486,13 +495,13 @@ class MyRob(CRobLinkAngs):
                         self.shouldTurn = True
                         self.lineMemory.append(line)
                     self.move(line)
-                    #self.driveMotors(0.1, 0.1)
+                    #self.drive_motors(0.1, 0.1)
             else:
                 if self.distance >= 2 and self.shouldTurn == True: 
                     intermediateGPS = (self.measures.x, self.measures.y)
                     self.lastEvenLocation = self.currentLocation
                     self.shouldTurn = False
-                    self.driveMotors(0,0)
+                    self.drive_motors(0,0)
                     self.updatePaths()  
                     self.grid_coordinates()
                     self.choosePath()
@@ -501,7 +510,7 @@ class MyRob(CRobLinkAngs):
                         self.shouldTurn = True
                         self.lineMemory.append(line)
                     self.move(line)
-                    #self.driveMotors(0.1, 0.1)
+                    #self.drive_motors(0.1, 0.1)
             
 
             """if self.measures.endLed:
@@ -527,7 +536,7 @@ class MyRob(CRobLinkAngs):
                     self.setVisitingLed(False)
                 if self.measures.returningLed==True:
                     state='return'
-                self.driveMotors(0.0,0.0)
+                self.drive_motors(0.0,0.0)
             elif state=='return':
                 if self.measures.visitingLed==True:
                     self.setVisitingLed(False)
@@ -546,16 +555,38 @@ class MyRob(CRobLinkAngs):
            or self.measures.irSensor[right_id]  > 5.0\
            or self.measures.irSensor[back_id]   > 5.0:
             print('Rotate left')
-            self.driveMotors(-0.1,+0.1)
+            self.drive_motors(-0.1,+0.1)
         elif self.measures.irSensor[left_id]> 2.7:
             print('Rotate slowly right')
-            self.driveMotors(0.1,0.0)
+            self.drive_motors(0.1,0.0)
         elif self.measures.irSensor[right_id]> 2.7:
             print('Rotate slowly left')
-            self.driveMotors(0.0,0.1)
+            self.drive_motors(0.0,0.1)
         else:
             print('Go')
-            self.driveMotors(0.1,0.1)
+            self.drive_motors(0.1,0.1)
+
+    def drive_motors(self, in_tl, in_tr):
+        # Power at t
+        out_tl = (in_tl + self.out_tl_1) / 2
+        out_tr = (in_tr + self.out_tr_1) / 2
+        # Translation
+        lin = (out_tl + out_tr)/2
+        xt = self.xt_1 + lin*(math.cos(self.anglet))
+        yt = self.yt_1 + lin*(math.sin(self.anglet))
+        # Rotation
+        rot = out_tr - out_tl
+        self.anglet = self.measures.compass + rot
+        # Do move
+        self.driveMotors(in_tl, in_tr)
+        # Update values
+        self.xt_1 = xt
+        self.yt_1 = yt
+        self.out_tl_1 = out_tl
+        self.out_tr_1 = out_tr
+        # Print results
+        print("Expected pose: (" + str(xt) + ", " + str(yt) + ", " + str(self.anglet) + ")")
+
 
 class Map():
     def __init__(self, filename):
